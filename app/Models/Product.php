@@ -23,12 +23,13 @@ class Product extends Model
         'has_option'
     ];
 
+    protected $casts = [
+        'options' => 'array',
+    ];
+   
     public function category(){
         return  $this->hasOne(Category::class);
     }
 
-    protected $casts = [
-        'options'    => 'json',
-    ];
 
 }

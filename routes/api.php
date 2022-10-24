@@ -23,19 +23,22 @@ use Illuminate\Support\Facades\Route;
     return $request->user();
 }); */
 
-Route::resource('category', CategoryController::class)->only(['index', 'show']);
-Route::resource('product', ProductController::class)->only(['index', 'show']);
-Route::prefix('auth')->group(function() {
-    Route::post('/login', [AuthController::class, 'login']);
-    Route::post('/register', [AuthController::class, 'register']);
-});
 Route::resource('shop', ShopController::class)->only(['index', 'show']);
-Route::middleware(['auth:api','role:0'])->group(function(){
-    Route::get('/get-me', [AuthController::class, 'getInfo']); 
-    Route::get('/logout', [AuthController::class, 'logout']);
-    Route::resource('cart', CartController::class);
-    Route::resource('order', OrderController::class);
-    Route::resource('product', ProductController::class);
-
-    Route::resource('shop', ShopController::class);
-});
+Route::middleware('cors')->group(function() {
+    Route::resource('category', CategoryController::class);
+    Route::resource('product', ProductController::class)->only(['index', 'show']);
+    Route::prefix('auth')->group(function() {
+        Route::post('/login', [AuthController::class, 'login']);
+        Route::post('/login-social ', [AuthController::class, 'socialLogin']);
+        Route::post('/register', [AuthController::class, 'register']);
+    });
+    Route::middleware(['auth:api','role:0'])->group(function(){
+        Route::get('/get-me', [AuthController::class, 'getInfo']); 
+        Route::resource('cart', CartController::class);
+        Route::get('/logout', [AuthController::class, 'logout']);
+        Route::resource('order', OrderController::class);
+        // Route::resource('product', ProductController::class);
+        
+        Route::resource('shop', ShopController::class);
+    });
+    });
