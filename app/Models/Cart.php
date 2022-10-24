@@ -12,10 +12,14 @@ class Cart extends Model
     protected $fillable = [
         'user_id',
         'product_id',
-        'quantity'
+        'quantity',
+        'product_options'
     ];
     protected $hidden = [
         'created_at', 'updated_at', 'user_id', 'product_id',
+    ];
+    protected $casts = [
+        'product_options'    => 'json',
     ];
     public function products(){
         return $this->belongsTo(Product::class,'product_id','id');

@@ -16,7 +16,9 @@ class ProductController extends Controller
      */
     public function index()
     {
-        return Product::get();
+        $p = Product::first();
+        logger(Product::first()->options);
+        return Product::get()->toArray();
     }
 
     /**
@@ -58,8 +60,7 @@ class ProductController extends Controller
     public function show($id)
     {
         $product = Product::findOrFail($id);
-        return ($product);
-        return view('welcome', ['product' => $product]);
+        return (($product->options));
     }
 
     /**
@@ -70,7 +71,9 @@ class ProductController extends Controller
      */
     public function edit($id)
     {
-        //
+        $p = Product::first();
+        logger(json_decode($p['options']));
+        logger(Product::first());
     }
 
     /**
