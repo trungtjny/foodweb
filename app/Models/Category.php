@@ -13,7 +13,8 @@ class Category extends Model
         'name', 'is_show',
     ];
 
-    public function product(){
-        return $this->belongsTo(Product::class);
+    public function products()
+    {
+        return $this->hasMany(Product::class);
     }
 }

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
@@ -15,9 +16,13 @@ class CategoryController extends Controller
      */
     public function index(Request $request)
     {
-        $filter = $request->filter;
-        logger(gettype($filter));
-        return Category::get();
+        $query = Category::query();
+        $filter = $request->get('filter');
+        if(!empty($filter['key'])) {
+            $query = $query->where('name', 'like', '%'.$filter['key'].'%');
+        }
+        logger($query->toSql());
+        return $query->get();
     }
 
     /**
@@ -84,7 +89,13 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
-        $cate = Category::findOrFail($id);
+        $cate = Product::findOrFail($id);
         return $cate->delete();
+    }
+
+    public function getProduct($id)
+    {
+        $category = Category::where('id', $id)->with('products')->first();
+        return response()->json($category['products']);
     }
 }

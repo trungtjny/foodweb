@@ -46,7 +46,7 @@ class ProductController extends Controller
                 $path = Storage::disk('local')->put('/public/product/'.$image_name, $image->getContent());
             }
             $input= $request->input();
-            $input['thumb'] = '/storage/product/'.$image_name;
+            $input['thumb'] = 'storage/product/'.$image_name;
         
         return Product::create($input);
     }

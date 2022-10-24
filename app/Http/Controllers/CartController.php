@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\Cart;
+use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class CartController extends Controller
 {
@@ -55,12 +57,12 @@ class CartController extends Controller
                     } else 
                     return response()->json( ['status' => "Sản",'result' => "true"]);
                 }
-                /* $input = $request->all();
+                $input = $request->all();
                 $input['user_id'] = Auth::id();
                 $cartItem = Cart::create($input);
                 $cartItem->product_options = $request->product_options;
                 $cartItem->save(); 
-                return response()->json(['status' => $product_check->name." đã được thêm vào giỏ hàng",'result' => "true"]); */
+                return response()->json(['status' => $product_check->name." đã được thêm vào giỏ hàng",'result' => "true"]);
             }
         }
         else {
@@ -130,4 +132,5 @@ class CartController extends Controller
         }
         else return response()->json(['status' => "Có lỗi trong quá trình thực hiện. Vui lòng thử lại sau!",'result' => "false"]);
     }
+    
 }
