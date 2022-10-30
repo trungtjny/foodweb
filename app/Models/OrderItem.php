@@ -16,6 +16,9 @@ class OrderItem extends Model
         'price'
     ];
 
+    protected $casts = [
+        'product_options' => 'array',
+    ];
     public function products()
     {
         return $this->belongsTo(Product::class,'product_id','id');

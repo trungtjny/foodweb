@@ -26,6 +26,7 @@ class CreateProductsTable extends Migration
             $table->tinyInteger('is_show')->default(1);//hien thi
             $table->json('options')->nullable();
             $table->tinyInteger('has_option')->nullable();
+            $table->tinyInteger('sale')->default(0);
             $table->timestamps(); 
             $table->softDeletes();
         });

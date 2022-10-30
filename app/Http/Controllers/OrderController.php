@@ -19,7 +19,7 @@ class OrderController extends Controller
      */
     public function index(Request $request)
     {
-        $orders = Order::where('user_id', Auth::id())->orderBy('updated_at', 'desc')->get();
+        $orders = Order::where('user_id', Auth::id())->with('orderItems.products')->orderBy('updated_at', 'desc')->get();
         return $orders;
     }
 
@@ -32,22 +32,26 @@ class OrderController extends Controller
     public function store(Request $request)
     {
         $input = $request->all();
-       
+        
         $input['user_id'] = Auth::id();
         $totalPrice = 0;
-        $order = Order::create($input); 
-        $cartItem = Cart::where('user_id',Auth::id())->get();
+        $cartItem = Cart::where('user_id',Auth::id())->with('products')->get();
         if(count($cartItem)){
-            foreach($cartItem as $item){
-                    $price = $item->products->price;
+            $order = Order::create($input); 
+            foreach($cartItem as $item ){
+                    $productItem = Product::findOrFail($item->product_id);
+                    $price = $item->products->options['size'][$item->product_options]['price']*$item->quantity;
                     $totalPrice += $price;
+                    logger( $item->products->options['size'][$item->product_options]);
+                    logger( $item->products->options['size'][$item->product_options]);
                     OrderItem::create([
                          'order_id' => $order->id,
                          'product_id' =>$item->product_id,
                          'quantity' =>$item->quantity,
+                        //  'product_options' => $item->product_options,
+                         'product_options' => $item->products->options['size'][$item->product_options],
                          'price' => $price,
                     ]);
-                    $productItem = Product::findOrFail($item->product_id);
                     $productItem->sold = $productItem->sold + $item->quantity;
                     $productItem->save();
                     $item->delete();
@@ -61,13 +65,14 @@ class OrderController extends Controller
             return $order;
         }
         else {
-            return ["error" => "Lỗi - giỏ hàng trống"];
+            return responseError('fail','Lỗi - giỏ hàng trống', 424);
         }
     }
 
     public function show($id)
     {
-        //
+        $order = Order::Where('id', $id)->with('orderItems.products')->get();
+        return $order;
     }
 
     /**
@@ -84,6 +89,8 @@ class OrderController extends Controller
             $order->update($request->input());
             return response()->json( ['status' => "Cập nhật thông tin thành công!",'result' => "true"]);
         }
+        else 
+        return responseSuccess(false,"Cập nhật đơn hàng không thành công, liên hệ tổng đài để được hỗ trợ",424);
     }
 
     /**

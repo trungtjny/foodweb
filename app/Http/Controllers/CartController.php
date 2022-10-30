@@ -8,6 +8,7 @@ use App\Models\Product;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Validator;
 
 class CartController extends Controller
@@ -19,8 +20,7 @@ class CartController extends Controller
      */
     public function index(Request $request)
     {
-        $user = User::first();
-        $data = Cart::where('user_id',$user->id)->select()->with(['products' => function($query){
+        $data = Cart::where('user_id',Auth::id())->select()->with(['products' => function($query){
             $query->select('name','id','thumb','price','options');
         } ])->get();
         foreach($data as $item) {
@@ -50,19 +50,19 @@ class CartController extends Controller
                 $options = $request->product_options;
                 $cart = Cart::where('product_id',$product_id)->where('user_id',Auth::id())->first();
                 if($cart){
-                    if(in_array($options, $product_check->options)) {
-                       /*  $cart->quantity = $cart->quantity + $quantity;
-                        $cart->save(); */
-                        return response()->json( ['status' => "s",'result' => "true"]);
-                    } else 
-                    return response()->json( ['status' => "Sản",'result' => "true"]);
+                    if($cart->product_options == $options) {
+                        $cart->product_options = $options;
+                        $cart->quantity = $cart->quantity + $quantity;
+                        $cart->save();
+                        return response()->json( ['message' => "Cập nhật số lượng sản phẩm thành công",'status' => "true"]);
+                    }
                 }
                 $input = $request->all();
                 $input['user_id'] = Auth::id();
                 $cartItem = Cart::create($input);
                 $cartItem->product_options = $request->product_options;
                 $cartItem->save(); 
-                return response()->json(['status' => $product_check->name." đã được thêm vào giỏ hàng",'result' => "true"]);
+                return response()->json(['message' => $product_check->name." đã được thêm vào giỏ hàng",'status' => "true"]);
             }
         }
         else {
@@ -101,18 +101,11 @@ class CartController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $product_id = $request->input('product_id');
-        $quantity = $request->input('quantity');
-        $option = $request->product_options;
-        if(Cart::where('product_id',$product_id)->where('user_id',Auth::id())->exists())
-        {
-            $cartItem = Cart::where('product_id',$product_id)->where('user_id',Auth::id())->first();
-            $cartItem->quantity = $quantity;
-            $cartItem->product_options = $option;
-            $cartItem->update();
-            return response()->json(['status' => "Cập nhật số lượng sản phẩm",'result' => "true"]);
+        $cart = Cart::findOrFail($id);
+        if($cart) {
+            $cart->quantity = $request->quantity;
+            $cart->save();
         }
-        else return response()->json(['status' => "Có lỗi trong quá trình thực hiện. Vui lòng thử lại sau!",'result' => "false"]);
     }
 
     /**
@@ -121,16 +114,14 @@ class CartController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Request $request)
+    public function destroy($id)
     {
-        $product_id = $request->input('product_id');
-        if(Cart::where('product_id',$product_id)->where('user_id',Auth::id())->exists())
-        {
-            $cartItem = Cart::where('product_id',$product_id)->where('user_id',Auth::id())->first();
-            $cartItem->delete();
-            return response()->json(['status' => "Sản phẩm đã được gỡ khỏi giỏ hàng!",'result' => "true"]);
-        }
-        else return response()->json(['status' => "Có lỗi trong quá trình thực hiện. Vui lòng thử lại sau!",'result' => "false"]);
+        $cart = Cart::where("id", $id)->first();
+        if($cart) {
+            $cart->delete();
+            return responseSuccess(null , "Delete successfully", 200);
+        } 
+        return responseError(null,"error",400);
     }
     
 }

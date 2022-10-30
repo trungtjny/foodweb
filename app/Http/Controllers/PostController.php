@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProductRequest;
-use App\Models\Product;
+use App\Http\Requests\PostRequest;
+use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
-class ProductController extends Controller
+class PostController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -16,16 +16,17 @@ class ProductController extends Controller
      */
     public function index(Request $request)
     {
-        $product = Product::query();
+        $post = Post::query();
         $filter = $request->get('filter');
         if (!empty($filter['key'])) {
-            $product = $product->where('name', 'like', '%' . $filter['key'] . '%')->orWhere('description', 'like', '%' . $filter['key'] . '%');
+            $post = $post->where('title', 'like', '%' . $filter['key'] . '%')->orWhere('desc', 'like', '%' . $filter['key'] . '%');
         }
-        if (!empty($filter['sortby'])) {
-            $product = $product->orderBy($filter['sortby'], $filter['sortop']);
-        }
-        logger($product->toSql());
-        return $product->get();
+        // if(!empty($filter['sortby'])) {
+        //     $post = $post->orderBy($filter['sortby'], $filter['sortop']);
+        // }
+        $post = $post->orderBy('id', 'desc')->get();
+
+        return responseSuccess($post, "Request success.", 200);
     }
 
     /**
@@ -35,6 +36,7 @@ class ProductController extends Controller
      */
     public function create()
     {
+        //
     }
 
     /**
@@ -43,18 +45,17 @@ class ProductController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(ProductRequest $request)
+    public function store(PostRequest $request)
     {
         $input = $request->input();
-        if ($request->hasFile('file')) {
+        if ($request->hasFile('thumb')) {
             $image = $request->file('file');
             $type = $request->file('file')->extension();
             $image_name = time() . '-product.' . $type;
-            $path = Storage::disk('local')->put('/public/product/' . $image_name, $image->getContent());
-            $input['thumb'] = 'storage/product/' . $image_name;
+            $path = Storage::disk('local')->put('/public/post/' . $image_name, $image->getContent());
+            $input['thumb'] = 'storage/post/' . $image_name;
         }
-
-        return Product::create($input);
+        return Post::create($input);
     }
 
     /**
@@ -65,8 +66,11 @@ class ProductController extends Controller
      */
     public function show($id)
     {
-        $product = Product::findOrFail($id);
-        return $product;
+        $post = Post::findOrFail($id);
+        if ($post) return responseSuccess($post, "Request success", 200);
+        else {
+            return responseError(null, "Fail", 424);
+        }
     }
 
     /**
@@ -77,6 +81,7 @@ class ProductController extends Controller
      */
     public function edit($id)
     {
+        //
     }
 
     /**
@@ -86,18 +91,17 @@ class ProductController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(ProductRequest $request, $id)
+    public function update(Request $request, $id)
     {
-        $product = Product::findOrFail($id);
-        $input = $request->all();
-        if ($request->hasFile('file')) {
+        $input = $request->input();
+        if ($request->hasFile('thumb')) {
             $image = $request->file('file');
             $type = $request->file('file')->extension();
             $image_name = time() . '-product.' . $type;
-            $path = Storage::disk('local')->put('/public/product/' . $image_name, $image->getContent());
-            $input['thumb'] = 'storage/product/' . $image_name;
+            $path = Storage::disk('local')->put('/public/post/' . $image_name, $image->getContent());
+            $input['thumb'] = 'storage/post/' . $image_name;
         }
-        return $product->update($input);
+        return Post::findOrFail($id)->update($input);
     }
 
     /**
@@ -108,20 +112,7 @@ class ProductController extends Controller
      */
     public function destroy($id)
     {
-        $product = Product::findOrFail($id);
-        return $product->delete();
-    }
-
-    public function getHomeProducts()
-    {
-        $data['bestSeller'] = Product::orderBy('sold', 'desc')->limit(5)->get();
-        logger($data);
-        $data['sale'] = Product::where('sale', 1)->get();
-        return responseSuccess($data, "Request success", 200);
-    }
-
-    public function sale()
-    {
-        return Product::where('sale', 1)->get();
+        $status = Post::findOrFail($id)->delete();
+        return responseSuccess($status,"Request Success", 200);
     }
 }

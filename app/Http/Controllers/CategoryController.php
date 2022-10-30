@@ -21,7 +21,7 @@ class CategoryController extends Controller
         if(!empty($filter['key'])) {
             $query = $query->where('name', 'like', '%'.$filter['key'].'%');
         }
-        logger($query->toSql());
+        logger($query->get());
         return $query->get();
     }
 
