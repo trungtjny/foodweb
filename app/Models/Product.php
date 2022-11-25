@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use PhpParser\JsonDecoder;
 
 class Product extends Model
 {
@@ -20,7 +21,8 @@ class Product extends Model
         'product_content',
         'is_show',
         'options',
-        'has_option'
+        'has_option',
+        'sale'
     ];
 
     protected $casts = [
@@ -31,5 +33,14 @@ class Product extends Model
         return  $this->hasOne(Category::class);
     }
 
-
+    // public function setOptionsAttribute($pass)
+    // {
+    //     logger(json_encode($pass));
+    //     $this->attributes['options'] = json_decode($pass);
+    // }
+    // public function getOptionsAttribute()
+    // {
+    //     logger(json_decode($this->attributes['options']));
+    //     return  json_decode($this->attributes['options']);
+    // }
 }

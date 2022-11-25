@@ -43,7 +43,6 @@ class OrderController extends Controller
                     $price = $item->products->options['size'][$item->product_options]['price']*$item->quantity;
                     $totalPrice += $price;
                     logger( $item->products->options['size'][$item->product_options]);
-                    logger( $item->products->options['size'][$item->product_options]);
                     OrderItem::create([
                          'order_id' => $order->id,
                          'product_id' =>$item->product_id,

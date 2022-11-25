@@ -63,7 +63,8 @@ class ShopController extends Controller
         }
         $shop = Shop::findOrFail($id);
         if ($shop) {
-            return $shop->update($request->all());
+            $shop->update($request->all());
+            return $shop;
         } else {
             return false;
         }

@@ -46,14 +46,15 @@ class ProductController extends Controller
     public function store(ProductRequest $request)
     {
         $input = $request->input();
-        if ($request->hasFile('file')) {
-            $image = $request->file('file');
-            $type = $request->file('file')->extension();
+        logger($input);
+        if ($request->hasFile('thumb')) {
+            $image = $request->file('thumb');
+            $type = $request->file('thumb')->extension();
             $image_name = time() . '-product.' . $type;
             $path = Storage::disk('local')->put('/public/product/' . $image_name, $image->getContent());
             $input['thumb'] = 'storage/product/' . $image_name;
         }
-
+        
         return Product::create($input);
     }
 
@@ -90,14 +91,15 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
         $input = $request->all();
-        if ($request->hasFile('file')) {
-            $image = $request->file('file');
-            $type = $request->file('file')->extension();
+        if ($request->hasFile('thumb')) {
+            $image = $request->file('thumb');
+            $type = $request->file('thumb')->extension();
             $image_name = time() . '-product.' . $type;
             $path = Storage::disk('local')->put('/public/product/' . $image_name, $image->getContent());
             $input['thumb'] = 'storage/product/' . $image_name;
         }
-        return $product->update($input);
+        $product->update($input);
+        return responseSuccess($product,'request success', 201);
     }
 
     /**

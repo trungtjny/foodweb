@@ -1,10 +1,13 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\ShopController;
+use App\Http\Controllers\Admin\SliderController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProductController;
 use App\Models\Category;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +35,8 @@ Route::resource('product', ProductController::class)->only(['index', 'show']);
 Route::get('/products/sale', [ProductController::class, 'sale']);
 
 Route::get('home-product', [ProductController::class, 'getHomeProducts']);
+Route::get('/blog', [PostController::class, 'blog']);
+Route::get('/sale', [PostController::class, 'sale']);
 Route::prefix('auth')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
     Route::post('/login-social ', [AuthController::class, 'socialLogin']);
@@ -45,9 +50,15 @@ Route::middleware(['auth:api', 'role:0',])->group(function () {
     Route::resource('order', OrderController::class);
 });
 
-Route::prefix('admin')->middleware(['auth:api', 'role:1'])->group(function () {
-    Route::resource('/product', ProductController::class);
-    //Route::post('/product/{id}', [ProductController::class, 'update']);
-    Route::resource('/category', CategoryController::class);
-    Route::resource('/shop', ShopController::class);
-});
+Route::prefix('admin')
+    // ->middleware(['auth:api', 'role:1'])
+    ->group(function () {
+        Route::resource('/product', ProductController::class);
+        //Route::post('/product/{id}', [ProductController::class, 'update']);
+        Route::resource('/category', CategoryController::class);
+        Route::resource('/shop', ShopController::class);
+        Route::resource('/slider', SliderController::class);
+        Route::resource('/post', PostController::class);
+        Route::resource('/voucher', PostController::class);
+        Route::get('/dashboard', [AdminController::class, 'getDataDashboard']);
+    });

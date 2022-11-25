@@ -27,7 +27,7 @@ class Order extends Model
     CONST DELIVER = 2;
     CONST COMPLETE = 3;
     CONST CANCEL = 4;
-    CONST FAIL =5;
+    CONST FAIL = 5;
     public function orderItems()
     {
         return $this ->hasMany(OrderItem::class);

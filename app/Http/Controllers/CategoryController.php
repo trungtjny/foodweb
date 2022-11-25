@@ -6,6 +6,7 @@ use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CategoryController extends Controller
 {
@@ -21,7 +22,6 @@ class CategoryController extends Controller
         if(!empty($filter['key'])) {
             $query = $query->where('name', 'like', '%'.$filter['key'].'%');
         }
-        logger($query->get());
         return $query->get();
     }
 
@@ -43,7 +43,16 @@ class CategoryController extends Controller
      */
     public function store(CategoryRequest $request)
     {
-        return Category::create($request->all());
+        $input=$request->all();
+        if ($request->hasFile('thumb')) {
+            logger("SSSSSSSSSSS");
+            $image = $request->file('thumb');
+            $type = $request->file('thumb')->extension();
+            $image_name = time() . '-product.' . $type;
+            $path = Storage::disk('local')->put('/public/category/' . $image_name, $image->getContent());
+            $input['img'] = 'storage/category/' . $image_name;
+        }
+        return Category::create($input);
     }
 
     /**
@@ -78,7 +87,16 @@ class CategoryController extends Controller
     public function update(Request $request, $id)
     {
         $cate = Category::findOrFail($id);
-        return $cate->update($request->all());
+        $input=$request->all();
+        if ($request->hasFile('thumb')) {
+            $image = $request->file('thumb');
+            $type = $request->file('thumb')->extension();
+            $image_name = time() . '-product.' . $type;
+            $path = Storage::disk('local')->put('/public/category/' . $image_name, $image->getContent());
+            $input['img'] = 'storage/category/' . $image_name;
+        }
+        $cate->update($input);
+        return $cate;
     }
 
     /**
@@ -89,7 +107,8 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
-        $cate = Product::findOrFail($id);
+        logger("XXXXXoa");
+        $cate = Category::findOrFail($id);
         return $cate->delete();
     }
 
