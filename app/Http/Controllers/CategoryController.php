@@ -45,7 +45,6 @@ class CategoryController extends Controller
     {
         $input=$request->all();
         if ($request->hasFile('thumb')) {
-            logger("SSSSSSSSSSS");
             $image = $request->file('thumb');
             $type = $request->file('thumb')->extension();
             $image_name = time() . '-product.' . $type;
@@ -107,7 +106,6 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
-        logger("XXXXXoa");
         $cate = Category::findOrFail($id);
         return $cate->delete();
     }

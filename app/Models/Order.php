@@ -17,6 +17,8 @@ class Order extends Model
         'message',
         'status',
         'totalprice',
+        'discount',
+        'voucher_id'
     ];
 
     protected $cats = [

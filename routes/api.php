@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\AuthController as AdminAuthController;
+use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ShopController;
 use App\Http\Controllers\Admin\SliderController;
 use App\Http\Controllers\AuthController;
@@ -9,6 +11,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\VoucherController;
 use App\Models\Category;
 use Illuminate\Support\Facades\Route;
 
@@ -51,7 +54,7 @@ Route::middleware(['auth:api', 'role:0',])->group(function () {
 });
 
 Route::prefix('admin')
-    // ->middleware(['auth:api', 'role:1'])
+    // ->middleware(['auth:api', 'role:admin'])
     ->group(function () {
         Route::resource('/product', ProductController::class);
         //Route::post('/product/{id}', [ProductController::class, 'update']);
@@ -59,6 +62,20 @@ Route::prefix('admin')
         Route::resource('/shop', ShopController::class);
         Route::resource('/slider', SliderController::class);
         Route::resource('/post', PostController::class);
-        Route::resource('/voucher', PostController::class);
+        Route::resource('/voucher', VoucherController::class);
+        Route::get('/voucher-use', [VoucherController::class, 'listUse']);
+
+        Route::post('/order', [AdminOrderController::class, 'getlist']);
+        Route::post('/order/{id}', [AdminOrderController::class, 'updateStatus']);
+        Route::post('/order-detail/{id}', [AdminOrderController::class, 'detail']);
+        Route::delete('/order/{id}', [AdminOrderController::class, 'delete']);
+        Route::post('/shop-list-oder', [AdminOrderController::class, 'getlistbyshopid']);
+
+
         Route::get('/dashboard', [AdminController::class, 'getDataDashboard']);
+        Route::get('/detail-shop', [AdminController::class, 'shop']);
+        Route::post('/create-member', [AdminAuthController::class, 'createMember']);
+        Route::post('/delete-member', [AdminAuthController::class, 'delete']);
+        Route::get('/list-user', [AdminAuthController::class, 'list']);
+        Route::post('/detail-user', [AdminAuthController::class, 'detail']);
     });

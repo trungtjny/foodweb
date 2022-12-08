@@ -26,6 +26,8 @@ class CreateOrdersTable extends Migration
             $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('shop_id')->references('id')->on('shops');
             $table->timestamps();
+            $table->integer('discount')->default('0');
+            $table->unsignedBigInteger('voucher_id')->nullable();
         });
     }
 
