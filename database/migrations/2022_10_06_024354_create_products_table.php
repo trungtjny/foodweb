@@ -18,14 +18,15 @@ class CreateProductsTable extends Migration
             $table->unsignedBigInteger('category_id');// dang mucj
             $table->foreign("category_id")->references('id')->on('categories');
             $table->string('name');
-            $table->string('thumb');//anh
-            $table->integer('price')->default(99999);
-            $table->integer('sold')->default(0);//da ban
+            $table->string('thumb')->nullable();//anh
+            $table->integer('price')->nullable()->default(99999);
+            $table->integer('sold')->nullable()->default(0);//da ban
             $table->text('description')->nullable();// thoong tin co ban
             $table->longtext('product_content')->nullable();//chi tiet
             $table->tinyInteger('is_show')->default(1);//hien thi
             $table->json('options')->nullable();
             $table->tinyInteger('has_option')->nullable();
+            $table->tinyInteger('sale')->default(0);
             $table->timestamps(); 
             $table->softDeletes();
         });

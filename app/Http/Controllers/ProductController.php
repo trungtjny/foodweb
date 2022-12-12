@@ -14,11 +14,18 @@ class ProductController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $p = Product::first();
-        logger(Product::first()->options);
-        return Product::get()->toArray();
+        $product = Product::query();
+        $filter = $request->get('filter');
+        if (!empty($filter['key'])) {
+            $product = $product->where('name', 'like', '%' . $filter['key'] . '%')->orWhere('description', 'like', '%' . $filter['key'] . '%');
+        }
+        if (!empty($filter['sortby'])) {
+            $product = $product->orderBy($filter['sortby'], $filter['sortop']);
+        }
+        logger($product->toSql());
+        return $product->get();
     }
 
     /**
@@ -28,7 +35,6 @@ class ProductController extends Controller
      */
     public function create()
     {
-        
     }
 
     /**
@@ -38,15 +44,16 @@ class ProductController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function store(ProductRequest $request)
-    {   
-            if($request->hasFile('file')) {
-                $image = $request->file('file');
-                $type = $request->file('file')->extension();
-                $image_name = time().'-product.'.$type;
-                $path = Storage::disk('local')->put('/public/product/'.$image_name, $image->getContent());
-            }
-            $input= $request->input();
-            $input['thumb'] = '/storage/product/'.$image_name;
+    {
+        $input = $request->input();
+        logger($input);
+        if ($request->hasFile('thumb')) {
+            $image = $request->file('thumb');
+            $type = $request->file('thumb')->extension();
+            $image_name = time() . '-product.' . $type;
+            $path = Storage::disk('local')->put('/public/product/' . $image_name, $image->getContent());
+            $input['thumb'] = 'storage/product/' . $image_name;
+        }
         
         return Product::create($input);
     }
@@ -60,7 +67,7 @@ class ProductController extends Controller
     public function show($id)
     {
         $product = Product::findOrFail($id);
-        return (($product->options));
+        return $product;
     }
 
     /**
@@ -71,9 +78,6 @@ class ProductController extends Controller
      */
     public function edit($id)
     {
-        $p = Product::first();
-        logger(json_decode($p['options']));
-        logger(Product::first());
     }
 
     /**
@@ -86,8 +90,16 @@ class ProductController extends Controller
     public function update(ProductRequest $request, $id)
     {
         $product = Product::findOrFail($id);
-
-        return $product->update($request->all());
+        $input = $request->all();
+        if ($request->hasFile('thumb')) {
+            $image = $request->file('thumb');
+            $type = $request->file('thumb')->extension();
+            $image_name = time() . '-product.' . $type;
+            $path = Storage::disk('local')->put('/public/product/' . $image_name, $image->getContent());
+            $input['thumb'] = 'storage/product/' . $image_name;
+        }
+        $product->update($input);
+        return responseSuccess($product,'request success', 201);
     }
 
     /**
@@ -100,5 +112,18 @@ class ProductController extends Controller
     {
         $product = Product::findOrFail($id);
         return $product->delete();
+    }
+
+    public function getHomeProducts()
+    {
+        $data['bestSeller'] = Product::orderBy('sold', 'desc')->limit(5)->get();
+        logger($data);
+        $data['sale'] = Product::where('sale', 1)->get();
+        return responseSuccess($data, "Request success", 200);
+    }
+
+    public function sale()
+    {
+        return Product::where('sale', 1)->get();
     }
 }

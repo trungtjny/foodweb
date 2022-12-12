@@ -14,14 +14,22 @@ class Order extends Model
         'name',
         'phone',
         'address',
+        'message',
+        'status',
+        'totalprice',
+        'discount',
+        'voucher_id'
     ];
 
+    protected $cats = [
+        // 'created_at'=> 'datetime:Y-m-d:H-i-s'
+    ];
     CONST PENDING = 0;
     CONST PREPARE = 1;
     CONST DELIVER = 2;
     CONST COMPLETE = 3;
     CONST CANCEL = 4;
-    CONST FAIL =5;
+    CONST FAIL = 5;
     public function orderItems()
     {
         return $this ->hasMany(OrderItem::class);
