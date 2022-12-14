@@ -45,22 +45,23 @@ Route::prefix('auth')->group(function () {
     Route::post('/login-social ', [AuthController::class, 'socialLogin']);
     Route::post('/register', [AuthController::class, 'register']);
 });
+Route::resource('admin/slider', SliderController::class);
 Route::middleware(['auth:api', 'role:0',])->group(function () {
     Route::post('/change-password', [AuthController::class, 'update']);
     Route::get('/get-me', [AuthController::class, 'getInfo']);
     Route::resource('cart', CartController::class);
     Route::get('/logout', [AuthController::class, 'logout']);
     Route::resource('order', OrderController::class);
+    Route::post('use-voucher', [OrderController::class, 'useVoucher']);
 });
 
 Route::prefix('admin')
-    // ->middleware(['auth:api', 'role:admin'])
+    ->middleware(['auth:api', 'role:2'])
     ->group(function () {
         Route::resource('/product', ProductController::class);
         //Route::post('/product/{id}', [ProductController::class, 'update']);
         Route::resource('/category', CategoryController::class);
         Route::resource('/shop', ShopController::class);
-        Route::resource('/slider', SliderController::class);
         Route::resource('/post', PostController::class);
         Route::resource('/voucher', VoucherController::class);
         Route::get('/voucher-use', [VoucherController::class, 'listUse']);
@@ -71,11 +72,14 @@ Route::prefix('admin')
         Route::delete('/order/{id}', [AdminOrderController::class, 'delete']);
         Route::post('/shop-list-oder', [AdminOrderController::class, 'getlistbyshopid']);
 
-
-        Route::get('/dashboard', [AdminController::class, 'getDataDashboard']);
-        Route::get('/detail-shop', [AdminController::class, 'shop']);
-        Route::post('/create-member', [AdminAuthController::class, 'createMember']);
-        Route::post('/delete-member', [AdminAuthController::class, 'delete']);
-        Route::get('/list-user', [AdminAuthController::class, 'list']);
-        Route::post('/detail-user', [AdminAuthController::class, 'detail']);
+        Route::middleware(['role:3'])->group( function() {
+            Route::get('/dashboard', [AdminController::class, 'getDataDashboard']);
+            Route::get('/detail-shop', [AdminController::class, 'shop']);
+            Route::get('/shop-order', [AdminController::class, 'shopOrder']);
+            Route::post('/create-member', [AdminAuthController::class, 'createMember']);
+            Route::post('/delete-member', [AdminAuthController::class, 'delete']);
+            Route::get('/list-user', [AdminAuthController::class, 'list']);
+            Route::post('/detail-user', [AdminAuthController::class, 'detail']);
+            Route::post('/edit-member', [AdminAuthController::class, 'update']);
+        });
     });

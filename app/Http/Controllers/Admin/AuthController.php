@@ -37,4 +37,8 @@ class AuthController extends Controller
         $dele = User::where('role', '>', 1)->get();
         return $dele;
     }
+    public function update(Request $request){
+        $user = User::findOrFail($request->user_id);
+        return $user->update($request->all());
+    }
 }

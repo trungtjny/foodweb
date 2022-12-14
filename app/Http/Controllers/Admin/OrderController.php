@@ -25,14 +25,17 @@ class OrderController extends Controller
         return $order;
     }
     public function getlist(Request $request) {
+        $q = Order::query();
         if($request->status) {
-            return Order::where('status', $request->status)->get();
-        } else return Order::with('orderItems.products')->orderBy('id', 'desc')->get();
+            $q = $q->where('status', $request->status);
+        } 
+        return $q->with('orderItems.products')->orderBy('id', 'desc')->get();
     }
 
     public function getlistbyshopid(Request $request) {
+        $q = Order::query();
         if($request->status) {
-            return Order::where('status', $request->status)->get();
-        } else return Order::where('shop_id', $request->shop_id)->with('orderItems.products')->orderBy('id', 'desc')->get();
+            $q = $q->where('status', $request->status);
+        }   return $q->where('shop_id', $request->shop_id)->with('orderItems.products')->orderBy('id', 'desc')->get();
     }
 }
