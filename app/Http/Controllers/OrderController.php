@@ -36,59 +36,55 @@ class OrderController extends Controller
     {
         $input = $request->all();
         $input['user_id'] = Auth::id();
-        DB::beginTransaction();
-        try {
-            if (!empty($input['code'])) {
-                $voucher = Voucher::where('code', $input['code'])->first();
-                if (!$voucher) return responseError('fail', 'Lỗi - Mã giảm giá không hợp lệ hoặc ngoài thời gian sử dụng', 424);
-                $check = VoucherUser::where('user_id', $input['user_id'])->where('voucher_id', $voucher->id)->get();
-                if (count($check)) return responseError([], 'bạn không thể sử dụng voucher này', 424);
-                $input['voucher_id'] = $voucher->id;
-                VoucherUser::create($input);
-            }
-            $totalPrice = 0;
-            $cartItem = Cart::where('user_id', Auth::id())->with('products')->get();
-            if (count($cartItem)) {
-                $order = Order::create($input);
-                foreach ($cartItem as $item) {
-                    $productItem = Product::findOrFail($item->product_id);
-                    $price = $item->products->options['size'][$item->product_options]['price'] * $item->quantity;
-                    $totalPrice += $price;
-                    OrderItem::create([
-                        'order_id' => $order->id,
-                        'product_id' => $item->product_id,
-                        'quantity' => $item->quantity,
-                        //  'product_options' => $item->product_options,
-                        'product_options' => $item->products->options['size'][$item->product_options],
-                        'price' => $price,
-                    ]);
-                    $productItem->sold = $productItem->sold + $item->quantity;
-                    $productItem->save();
-                    $item->delete();
+     
+                if (!empty($input['code'])) {
+                    $voucher = Voucher::where('code', $input['code'])->first();
+                    if (!$voucher) return responseError('fail', 'Lỗi - Mã giảm giá không hợp lệ hoặc ngoài thời gian sử dụng', 424);
+                    $check = VoucherUser::where('user_id', $input['user_id'])->where('voucher_id', $voucher->id)->get();
+                    if (count($check)) return responseError([], 'bạn không thể sử dụng voucher này', 424);
+                    $input['voucher_id'] = $voucher->id;
+                    VoucherUser::create($input);
                 }
-                $order->discount = $voucher->discount;
-                if ($input['voucher_id']) {
-                    if($voucher->type == "%") {
-                        $totalPrice = $totalPrice*$voucher->discount/100;
-                    } else if($voucher->type == "vnd") {
-                        $totalPrice = $totalPrice-$voucher->discount;
+                $totalPrice = 0;
+                $cartItem = Cart::where('user_id', Auth::id())->with('products')->get();
+                if (count($cartItem)) {
+                    $order = Order::create($input);
+                    foreach ($cartItem as $item) {
+                        $productItem = Product::findOrFail($item->product_id);
+                        $price = $item->products->options['size'][$item->product_options]['price'] * $item->quantity;
+                        $totalPrice += $price;
+                        OrderItem::create([
+                            'order_id' => $order->id,
+                            'product_id' => $item->product_id,
+                            'quantity' => $item->quantity,
+                            //  'product_options' => $item->product_options,
+                            'product_options' => $item->products->options['size'][$item->product_options],
+                            'price' => $price,
+                        ]);
+                        $productItem->sold = $productItem->sold + $item->quantity;
+                        $productItem->save();
+                        $item->delete();
                     }
+                    if ($input['voucher_id']) {
+                        if($voucher->type == "%") {
+                            $discount = $totalPrice*$voucher->discount/100;
+                        } else if($voucher->type == "vnd") {
+                            $discount = $voucher->discount;
+                        }
+                        $totalPrice = $totalPrice-$discount;
+                        $order->discount = $discount;
+                    }
+                    $order->totalPrice = $totalPrice;
+                    $order->save();
+    
+                    $user = User::findOrFail(Auth::id());
+                    if (empty($user->address)) $user->address = $input['address'];
+                    $user->save();
+                    return $order;
+                } else {
+                    return responseError('fail', 'Lỗi - giỏ hàng trốsssng', 424);
                 }
-                $order->totalPrice = $totalPrice;
-                $order->save();
-
-                $user = User::findOrFail(Auth::id());
-                if (empty($user->address)) $user->address = $input['address'];
-                $user->save();
-                return $order;
-            } else {
-                return responseError('fail', 'Lỗi - giỏ hàng trốsssng', 424);
-            }
-        } catch (\Exception $e) {
-            logger($e->getMessage());
-            DB::rollBack();
-            return responseError('fail', 'Lỗi - giỏ hàng trống', 424);
-        }
+        
     }
 
     public function show($id)
@@ -128,7 +124,7 @@ class OrderController extends Controller
                 $item->products->sold -= $item->quantity;
                 $item->products->save();
             }
-            $order->status = Order::FAIL;
+            $order->status = Order::CANCEL;
             $order->save();
             return response()->json(['status' => "Huỷ đơn hàng thành công!", 'result' => "true"]);
         }
@@ -136,5 +132,20 @@ class OrderController extends Controller
 
     public function checkout()
     {
+    }
+
+    public function useVoucher(Request $request)
+    {
+        $input = $request->all();
+        $input['user_id'] = Auth::id();
+        if (!empty($input['code'])) {
+            $voucher = Voucher::where('code', $input['code'])->first();
+            if (!$voucher) return responseError('fail', 'Lỗi - Mã giảm giá không hợp lệ hoặc ngoài thời gian sử dụng', 424);
+            $check = VoucherUser::where('user_id', $input['user_id'])->where('voucher_id', $voucher->id)->get();
+            if (count($check)) return responseError([], 'Bạn đã hết lượt không thể sử dụng voucher này', 424);
+            $input['voucher_id'] = $voucher->id;
+
+            return responseError($voucher, '', 200);
+        }
     }
 }

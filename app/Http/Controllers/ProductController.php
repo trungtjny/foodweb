@@ -24,7 +24,7 @@ class ProductController extends Controller
         if (!empty($filter['sortby'])) {
             $product = $product->orderBy($filter['sortby'], $filter['sortop']);
         }
-        logger($product->toSql());
+        //logger($product->toSql());
         return $product->get();
     }
 
@@ -46,7 +46,7 @@ class ProductController extends Controller
     public function store(ProductRequest $request)
     {
         $input = $request->input();
-        logger($input);
+        //logger($input);
         if ($request->hasFile('thumb')) {
             $image = $request->file('thumb');
             $type = $request->file('thumb')->extension();
@@ -117,7 +117,6 @@ class ProductController extends Controller
     public function getHomeProducts()
     {
         $data['bestSeller'] = Product::orderBy('sold', 'desc')->limit(5)->get();
-        logger($data);
         $data['sale'] = Product::where('sale', 1)->get();
         return responseSuccess($data, "Request success", 200);
     }

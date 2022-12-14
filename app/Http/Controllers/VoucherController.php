@@ -17,9 +17,11 @@ class VoucherController extends Controller
     {
         return Voucher::where('start', '<=', Carbon::today())->where('end', '>=', Carbon::today())->get();
     }
-    public function index()
+    public function index(Request $request)
     {
-        return Voucher::orderBy('id','desc')->get();
+        $query = Voucher::query();
+        if(isset($request->key)) $query->where('code','like','%'.$request->key.'%');
+        return $query->orderBy('id','desc')->get();
     }
     /**
      * Show the form for creating a new resource.

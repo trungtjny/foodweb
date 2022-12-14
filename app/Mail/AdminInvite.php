@@ -11,7 +11,7 @@ class AdminInvite extends Mailable
 {
     use Queueable, SerializesModels;
 
-    private $account;
+    public $account;
     /**
      * Create a new message instance.
      *

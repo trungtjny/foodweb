@@ -29,7 +29,8 @@ class SendMailCreateAccountListener
     public function handle(SendMailCreateAccountEvent $event)
     {
         logger($event->user);
+        $account = $event->user;
         $email = $event->user['email'];
-        Mail::to($email)->send( new AdminInvite($event->user));
+        Mail::to($email)->send( new AdminInvite($account));
     }
 }

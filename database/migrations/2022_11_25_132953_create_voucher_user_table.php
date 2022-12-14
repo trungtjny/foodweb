@@ -20,6 +20,7 @@ class CreateVoucherUserTable extends Migration
             $table->foreign('user_id')->references('id')->on('users');
             $table->foreign('voucher_id')->references('id')->on('vouchers');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

@@ -2,5 +2,5 @@
 <p>Vui lòng đăng nhập theo đường dẫn dưới đây.</p>
 <br>
 <p>Thông tin tài khoản.</p>
-<p>Email: {{@account['email']}}</p>
-<p>Password: {{@account['password']}}</p>
+<p>Email: {{$account['email']}}</p>
+<p>Password: {{$account['password']}}</p>
